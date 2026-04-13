@@ -33,7 +33,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['52.87.50.207']
+ALLOWED_HOSTS = ['44.209.239.60']
 print(ALLOWED_HOSTS)
 
 
