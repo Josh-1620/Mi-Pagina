@@ -5,6 +5,7 @@ from movies.forms import MovieReviewForm, MovieCommentForm
 from django.http import HttpResponse
 from .utils import fetch_from_tmdb
 
+
 def all_movies(request):
     movies = Movie.objects.all() # Movies de la BD
     context = { 'objetos':movies, 'message':'welcome' }
@@ -28,22 +29,19 @@ def saludo(request, veces):
     return render(request,'movies/saludo.html', context=context )
 
 def movie(request, movie_id):
-    
     movie_data = fetch_from_tmdb(f"movie/{movie_id}", params={'append_to_response': 'credits'})
     
     if not movie_data:
-        return render(request, '404.html') 
+        # En lugar de buscar un template que no existe, lanzamos un texto simple
+        return HttpResponse(f"Error: No se pudo obtener la película {movie_id} de TMDB. Revisa tu API Key.", status=404) 
 
-    # resenas locales
-    # Buscamos por tmdb
+    # El resto del código se queda igual...
     reviews = MovieReview.objects.filter(movie__tmdb_id=movie_id).order_by('-created_at')
-    
-    # resena
     review_form = MovieReviewForm()
     
     context = {
         'movie': movie_data,
-        'actors': movie_data.get('credits', {}).get('cast', [])[:10], # solo 10
+        'actors': movie_data.get('credits', {}).get('cast', [])[:10],
         'reviews': reviews,
         'review_form': review_form,
     }
