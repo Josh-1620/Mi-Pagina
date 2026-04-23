@@ -30,12 +30,26 @@ def saludo(request, veces):
     return render(request,'movies/saludo.html', context=context )
 
 def movie(request, movie_id):
-    movie = Movie.objects.get(id=movie_id)
+    
+    movie_data = fetch_from_tmdb(f"movie/{movie_id}", params={'append_to_response': 'credits'})
+    
+    if not movie_data:
+        return render(request, '404.html') 
+
+    # resenas locales
+    # Buscamos por tmdb
+    reviews = MovieReview.objects.filter(movie__tmdb_id=movie_id).order_by('-created_at')
+    
+    # resena
     review_form = MovieReviewForm()
-    print(request) 
-    print(movie.title)
-    context = {'movie':movie, 'saludo':'welcome', 'review_form':review_form, 'lista':[1,2,3,3,3] }
-    return render(request,'movies/movie.html', context=context )
+    
+    context = {
+        'movie': movie_data,
+        'actors': movie_data.get('credits', {}).get('cast', [])[:10], # solo 10
+        'reviews': reviews,
+        'review_form': review_form,
+    }
+    return render(request, 'movies/movie.html', context)
 
 
 def movie_reviews(request, movie_id):
