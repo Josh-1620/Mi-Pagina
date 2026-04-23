@@ -31,14 +31,14 @@ class Movie(models.Model):
     release_date = models.DateField()
     running_time = models.IntegerField()
     budget = models.IntegerField(blank=True, null=True)
-    tmdb_id = models.IntegerField(blank=True, null=True)
+    tmdb_id = models.IntegerField(unique=True) #cambio para referenciar la API
     revenue = models.IntegerField(blank=True, null=True)
     poster_path = models.URLField(blank=True, null=True)
     genres = models.ManyToManyField(Genre)
     credits = models.ManyToManyField(Person, through='MovieCredit')
 
     def __str__(self):
-        return f'{self.title} {self.release_date}'
+        return f'{self.title} ({self.release_date.year if self.release_date else "N/A"})'
 
 
 class MovieCredit(models.Model):
@@ -58,4 +58,5 @@ class MovieReview(models.Model):
     rating = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(100)])
     review = models.TextField(blank=True)
     title = models.TextField(blank=False, null=False, default="Reseña")
+    created_at = models.DateTimeField(auto_now_add=True) #para saber cuando se voto
 
