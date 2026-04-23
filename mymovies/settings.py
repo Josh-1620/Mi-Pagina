@@ -29,7 +29,8 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY') 
-
+TMDB_API_KEY = env('TMDB_API_KEY')
+TMDB_TOKEN = env('TMDB_TOKEN')
 # SECURITY WARNING: don't run with debug turned on in production!
 
 
@@ -38,14 +39,14 @@ SECRET_KEY = env('SECRET_KEY')
 import os
 
 if env.str('DATABASE_URL', default=None):
-    # CONFIGURACIÓN PARA AWS
+    # CONFIGUR PARA AWS
     DEBUG = False
-    ALLOWED_HOSTS = ['44.209.239.60'] # Tu IP de AWS
+    ALLOWED_HOSTS = ['44.209.239.60'] # IP de AWS
     DATABASES = {
-        'default': env.db() # Lee la conexión Postgres del .env de AWS
+        'default': env.db() 
     }
 else:
-    # CONFIGURACIÓN PARA FEDORA (LOCAL)
+    #FEDORA (LOCAL)
     DEBUG = True
     ALLOWED_HOSTS = ['localhost', '127.0.0.1']
     DATABASES = {
