@@ -11,9 +11,17 @@ def all_movies(request):
 
 # Create your views here.
 def index(request):
-    movies = Movie.objects.all()
-    context = { 'movies':movies, 'message':'welcome' }
-    return render(request,'movies/index.html', context=context )
+    # 1. Pedimos las películas que están en cartelera ahora mismo
+    data = fetch_from_tmdb("movie/now_playing")
+    
+    # 2. Extraemos la lista de resultados
+    movies_api = data.get('results', []) if data else []
+    
+    context = {
+        'movies': movies_api,
+        'message': 'Películas más recientes'
+    }
+    return render(request, 'movies/index.html', context)
 
 def saludo(request, veces):
     saludo = 'Hola ' * veces
