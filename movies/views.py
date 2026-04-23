@@ -10,12 +10,9 @@ def all_movies(request):
     context = { 'objetos':movies, 'message':'welcome' }
     return render(request,'movies/allmovies.html', context=context )
 
-# Create your views here.
 def index(request):
-    # 1. Pedimos las películas que están en cartelera ahora mismo
+   
     data = fetch_from_tmdb("movie/now_playing")
-    
-    # 2. Extraemos la lista de resultados
     movies_api = data.get('results', []) if data else []
     
     context = {
