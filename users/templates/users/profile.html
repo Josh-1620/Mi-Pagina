@@ -1,2 +1,84 @@
-<h1>Hola {{request.user}}</h1>
-<p> <a href='{% url "logout" %}'> Cerrar Sesión</a>  </p>
+{% extends 'movies/base.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-4">
+            <div class="h-20 w-20 bg-indigo-600 rounded-full flex items-center justify-center text-white text-3xl font-bold uppercase">
+                {{ request.user.username|slice:":1" }}
+            </div>
+            <div>
+                <h1 class="text-3xl font-extrabold text-gray-900">Hola, {{ request.user.username }}!</h1>
+                <p class="text-gray-500 font-medium">Gestiona tu colección y reseñas de películas</p>
+            </div>
+        </div>
+        <a href="{% url 'users:logout' %}" 
+           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors shadow-sm">
+            Cerrar Sesión
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <div class="lg:col-span-1 space-y-6">
+            <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <span class="text-red-500">❤️</span> Mis Favoritas
+            </h2>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <ul class="divide-y divide-gray-100">
+                    {% for like in likes %}
+                    <li class="p-4 hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <img src="https://image.tmdb.org/t/p/w92{{ like.movie.poster_path }}" 
+                                 alt="{{ like.movie.title }}" 
+                                 class="w-12 h-18 rounded object-cover shadow-sm">
+                            <div>
+                                <p class="text-sm font-bold text-gray-900">{{ like.movie.title }}</p>
+                                <a href="{% url 'movies:movie_detail' like.movie.tmdb_id %}" class="text-xs text-indigo-600 hover:underline">Ver detalle</a>
+                            </div>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="p-8 text-center text-gray-400">
+                        Aún no has dado Like a ninguna película.
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 space-y-6">
+            <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <span class="text-indigo-500">✍️</span> Mis Reseñas
+            </h2>
+            <div class="grid grid-cols-1 gap-6">
+                {% for review in reviews %}
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center gap-3">
+                            <img src="https://image.tmdb.org/t/p/w92{{ review.movie.poster_path }}" 
+                                 class="w-10 h-14 rounded object-cover shadow-sm border border-gray-200">
+                            <div>
+                                <h3 class="font-bold text-gray-900 leading-tight">{{ review.movie.title }}</h3>
+                                <div class="flex items-center gap-1 mt-1">
+                                    <span class="text-yellow-400">★</span>
+                                    <span class="text-sm font-bold">{{ review.rating }}</span>
+                                    <span class="text-xs text-gray-400 ml-2">{{ review.created_at|date:"d M Y" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 text-sm leading-relaxed italic">"{{ review.review }}"</p>
+                </div>
+                {% empty %}
+                <div class="bg-white rounded-xl border-2 border-dashed border-gray-200 p-12 text-center text-gray-400">
+                    Todavía no has escrito ninguna reseña.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
