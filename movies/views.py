@@ -3,6 +3,8 @@ from django.http import HttpResponse, HttpResponseRedirect
 from movies.models import Movie, MovieReview, Person, MovieLike
 from movies.forms import MovieReviewForm, MovieCommentForm
 from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+
 from .utils import fetch_from_tmdb
 
 
@@ -72,9 +74,12 @@ def add_like(request, movie_id):
                   'movies/movie_comment_form.html',
                   {'form': form, 'movie':movie})
 
+
+
+
+@login_required # Evita que usuarios no logueados entren
 def add_review(request, movie_id):
-  
-    movie, created = Movie.objects.get_or_create(tmdb_id=movie_id, defaults={'title': 'Cargando...'})
+    movie, created = Movie.objects.get_or_create(tmdb_id=movie_id, defaults={'title': 'Temporal'})
     
     if created:
         data = fetch_from_tmdb(f"movie/{movie_id}")
@@ -82,29 +87,18 @@ def add_review(request, movie_id):
             movie.title = data.get('title', 'Sin título')
             movie.overview = data.get('overview', '')
             movie.poster_path = data.get('poster_path', '')
-            
-            movie.release_date = data.get('release_date') if data.get('release_date') else None
+            r_date = data.get('release_date')
+            movie.release_date = r_date if r_date else None
             movie.running_time = data.get('runtime', 0)
             movie.save()
 
     if request.method == 'POST':
         form = MovieReviewForm(request.POST)
         if form.is_valid():
-            
-            rating = form.cleaned_data['rating']
-            title  = form.cleaned_data['title']
-            review = form.cleaned_data['review']
-            
-            
-            movie_review = MovieReview(
-                movie=movie,
-                rating=rating,
-                title=title,
-                review=review,
-                user=request.user
-            )
-            movie_review.save()
-            
+            review = form.save(commit=False)
+            review.movie = movie
+            review.user = request.user
+            review.save()
             
             return HttpResponse(status=204, headers={'HX-Trigger': 'listChanged'})
     else:
