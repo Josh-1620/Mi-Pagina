@@ -6,30 +6,21 @@
         <div class="flex flex-shrink-0 items-center">
           <img class="h-10 w-auto" src="{% static 'movies/film.png' %}" alt="logo">
         </div>
-        <div class="hidden lg:ml-6 lg:flex lg:space-x-8">
-          <!-- Current: "border-indigo-500 text-gray-900", Default: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" -->
-          <a href="/" class="inline-flex items-center border-b-2
-                        {% if request.path == '/' %}
-                        border-sky-600 
-                        {% else %} 
-                        border-transparent
-                        {% endif %}
-                        px-1 
-                        pt-1 text-sm font-medium text-blue-900">My Movies</a>
-        {% if user.is_authenticated %}
-          <a href="/collections" class="inline-flex items-center border-b-2 
-                        {% if request.path == '/collections/' %}
-                        border-sky-600 
-                        {% else %} 
-                        border-transparent
-                        {% endif %}
+        <div class="flex space-x-8">
+    <a href="{% url 'movies:index' %}" 
+       class="inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium 
+       {% if request.resolver_match.url_name == 'index' %} border-sky-600 text-blue-900 {% else %} border-transparent text-gray-500 hover:text-gray-700 {% endif %}">
+       Inicio
+    </a>
 
-                        px-1
-                        pt-1 text-sm font-medium text-gray-500 hover:border-gray-300
-                        hover:text-gray-700">Mis Peliculas</a>
-
-        {% endif %}
-        </div>
+    {% if user.is_authenticated %}
+        <a href="{% url 'users:profile' %}" 
+           class="inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium 
+           {% if request.resolver_match.url_name == 'profile' %} border-sky-600 text-blue-900 {% else %} border-transparent text-gray-500 hover:text-gray-700 {% endif %}">
+           Mis Películas
+        </a>
+    {% endif %}
+</div>
       </div>
       <div class="flex flex-1 items-center justify-center px-2 lg:ml-6 lg:justify-end">
         <div class="w-full max-w-lg lg:max-w-xs">

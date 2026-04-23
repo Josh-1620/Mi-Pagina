@@ -31,49 +31,67 @@ def saludo(request, veces):
     return render(request,'movies/saludo.html', context=context )
 
 def movie(request, movie_id):
+   
     movie_data = fetch_from_tmdb(f"movie/{movie_id}", params={'append_to_response': 'credits'})
     
     if not movie_data:
-        # En lugar de buscar un template que no existe, lanzamos un texto simple
-        return HttpResponse(f"Error: No se pudo obtener la película {movie_id} de TMDB. Revisa tu API Key.", status=404) 
+        return HttpResponse(f"Error: No se pudo obtener la película {movie_id}", status=404) 
 
-    # El resto del código se queda igual...
-    reviews = MovieReview.objects.filter(movie__tmdb_id=movie_id).order_by('-created_at')
-    review_form = MovieReviewForm()
     
+    reviews = MovieReview.objects.filter(movie__tmdb_id=movie_id).order_by('-created_at')
+    
+    
+    user_likes_this = False
+    if request.user.is_authenticated:
+        user_likes_this = MovieLike.objects.filter(user=request.user, movie__tmdb_id=movie_id).exists()
+
     context = {
         'movie': movie_data,
         'actors': movie_data.get('credits', {}).get('cast', [])[:10],
         'reviews': reviews,
-        'review_form': review_form,
+        'review_form': MovieReviewForm(),
+        'user_likes_this': user_likes_this, 
     }
     return render(request, 'movies/movie.html', context)
 
 
 def movie_reviews(request, movie_id):
-    movie = Movie.objects.get(id=movie_id)
-    return render(request,'movies/reviews.html', context={'movie':movie } )
+    # Filtramos por el tmdb_id de la película
+    reviews = MovieReview.objects.filter(movie__tmdb_id=movie_id).order_by('-created_at')
+    return render(request, 'movies/reviews.html', {'reviews': reviews})
 
+@login_required
+def user_collections(request):
+   
+    likes = MovieLike.objects.filter(user=request.user).select_related('movie')
+    return render(request, 'movies/collections.html', {'likes': likes})
+
+
+
+
+@login_required
 def add_like(request, movie_id):
-    form = None
-    movie = Movie.objects.get(id=movie_id)
+  
+    movie_local, created = Movie.objects.get_or_create(
+        tmdb_id=movie_id, 
+        defaults={'title': 'Cargando...'}
+    )
+    
+    if created:
+        data = fetch_from_tmdb(f"movie/{movie_id}")
+        if data:
+            movie_local.title = data.get('title')
+            movie_local.poster_path = data.get('poster_path')
+            movie_local.save()
 
-    if request.method == 'POST':
-        form = MovieCommentForm(request.POST)
-        if form.is_valid():
-            review = form.cleaned_data['review']
-            movie_like = MovieLike(
-                    movie=movie,
-                    review=review,
-                    user=request.user)
-            movie_like.save()
-            return HttpResponseRedirect('/movies/')
-    else:
-        form = MovieCommentForm()
-        return render(request,
-                  'movies/movie_comment_form.html',
-                  {'form': form, 'movie':movie})
-
+   
+    like, created_like = MovieLike.objects.get_or_create(user=request.user, movie=movie_local)
+    
+    if not created_like:
+        like.delete()
+        return HttpResponse("🤍 Like") 
+    
+    return HttpResponse("❤️ Ya te gusta")
 
 
 

@@ -3,12 +3,15 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
-
+from movies.models import MovieReview, MovieLike
+from django.contrib.auth.decorators import login_required
 def index(request):
     if not request.user.is_authenticated:
         return HttpResponseRedirect(reverse('login'))
     else:
         return render(request,'users/profile.html')
+    
+
 
 def login_view(request):
     if request.method == 'POST':
@@ -28,3 +31,15 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse('index'))
+
+@login_required
+def profile(request):
+    
+    user_reviews = MovieReview.objects.filter(user=request.user).select_related('movie')
+    user_likes = MovieLike.objects.filter(user=request.user).select_related('movie')
+    
+    context = {
+        'reviews': user_reviews,
+        'likes': user_likes,
+    }
+    return render(request, 'users/profile.html', context)
